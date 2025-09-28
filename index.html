@@ -46,6 +46,7 @@
             background-color: var(--bg-color);
             color: var(--text-color);
             transition: all 0.3s ease;
+            overflow-x: hidden;
         }
 
         /* Loading Screen */
@@ -314,7 +315,7 @@
             border-left-color: #4CAF50;
         }
 
-        /* Modal Styles */
+        /* Modal Styles - UPDATED FOR SCROLLING */
         .modal {
             position: fixed;
             top: 0;
@@ -327,6 +328,8 @@
             align-items: center;
             z-index: 1000;
             backdrop-filter: blur(5px);
+            padding: 20px;
+            box-sizing: border-box;
         }
 
         .modal.hidden {
@@ -338,14 +341,22 @@
             padding: 30px;
             border-radius: 20px;
             max-width: 400px;
-            width: 90%;
+            width: 100%;
             box-shadow: 0 10px 30px rgba(0,0,0,0.3);
             color: var(--text-color);
+            max-height: 90vh;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
         }
 
         .modal-content h2 {
             margin-bottom: 20px;
             text-align: center;
+            position: sticky;
+            top: 0;
+            background: var(--card-bg);
+            padding: 10px 0;
+            z-index: 10;
         }
 
         /* Setting Groups */
@@ -458,11 +469,16 @@
             outline: none;
         }
 
-        /* Modal Actions */
+        /* Modal Actions - STICKY AT BOTTOM */
         .modal-actions {
             display: flex;
             gap: 10px;
             margin-top: 20px;
+            position: sticky;
+            bottom: 0;
+            background: var(--card-bg);
+            padding: 15px 0 5px 0;
+            z-index: 10;
         }
 
         .btn-primary {
@@ -475,6 +491,7 @@
             font-size: 1.1em;
             cursor: pointer;
             transition: all 0.3s;
+            min-height: 50px;
         }
 
         .btn-primary:active {
@@ -491,6 +508,7 @@
             font-size: 1.1em;
             cursor: pointer;
             transition: all 0.3s;
+            min-height: 50px;
         }
 
         .btn-success {
@@ -503,6 +521,7 @@
             font-size: 1.1em;
             cursor: pointer;
             transition: all 0.3s;
+            min-height: 50px;
         }
 
         .btn-secondary:active, .btn-success:active {
@@ -524,6 +543,8 @@
             transition: opacity 0.3s ease;
             box-shadow: 0 4px 15px rgba(0,0,0,0.3);
             z-index: 1001;
+            max-width: 90%;
+            text-align: center;
         }
 
         .status-message.show {
@@ -622,7 +643,26 @@
             gap: 10px;
         }
 
-        /* Responsive Design */
+        /* Scrollbar Styling for Modal */
+        .modal-content::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .modal-content::-webkit-scrollbar-track {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        .modal-content::-webkit-scrollbar-thumb {
+            background: var(--primary-color);
+            border-radius: 4px;
+        }
+
+        .modal-content::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-dark);
+        }
+
+        /* Responsive Design - ENHANCED MOBILE SUPPORT */
         @media (max-width: 480px) {
             .app-container {
                 padding: 15px;
@@ -646,12 +686,55 @@
                 font-size: 1.8em;
             }
             
+            .modal {
+                padding: 10px;
+            }
+            
             .modal-content {
                 padding: 20px;
+                max-height: 95vh;
             }
             
             .modal-actions {
                 flex-direction: column;
+                gap: 10px;
+                position: sticky;
+                bottom: 0;
+                background: var(--card-bg);
+                padding: 15px 0 5px 0;
+            }
+            
+            .btn-primary, .btn-secondary, .btn-success {
+                min-height: 55px;
+                font-size: 1.1em;
+            }
+            
+            /* Ensure modal content doesn't get cut off */
+            .modal-content h2 {
+                position: sticky;
+                top: 0;
+                background: var(--card-bg);
+                padding: 10px 0;
+                margin-bottom: 15px;
+            }
+            
+            .setting-group {
+                margin: 20px 0;
+            }
+        }
+
+        @media (max-width: 350px) {
+            .modal-content {
+                padding: 15px;
+            }
+            
+            .color-picker {
+                gap: 5px;
+            }
+            
+            .color-option {
+                font-size: 2em;
+                padding: 8px;
             }
         }
 
@@ -667,6 +750,11 @@
         /* Hide loading when app ready */
         body.loaded #loading {
             display: none;
+        }
+
+        /* Prevent body scroll when modal is open */
+        body.modal-open {
+            overflow: hidden;
         }
     </style>
 </head>
@@ -732,7 +820,7 @@
         <div class="status-message" id="status-message"></div>
     </div>
 
-    <!-- Settings Modal -->
+    <!-- Settings Modal - NOW SCROLLABLE -->
     <div id="settings-modal" class="modal hidden">
         <div class="modal-content">
             <h2>⚙️ Settings</h2>
@@ -786,6 +874,7 @@
                 </label>
             </div>
 
+            <!-- Sticky action buttons at bottom -->
             <div class="modal-actions">
                 <button class="btn-secondary" id="cancel-settings">Cancel</button>
                 <button class="btn-primary" id="save-settings" disabled>Save Settings</button>
@@ -846,14 +935,14 @@
                         fontSize: 'default',
                         theme: 'orange',
                         darkMode: false,
-                        locked: true  // Start with settings locked
+                        locked: true
                     },
                     history: []
                 };
                 
                 this.isProcessing = false;
                 this.hasUnsavedChanges = false;
-                this.settingsUnlocked = false; // Track if settings are currently unlocked in modal
+                this.settingsUnlocked = false;
                 this.init();
             }
 
@@ -891,7 +980,7 @@
                 }
             }
 
-            // 🎯 NEW: Improved Settings Lock System
+            // 🎯 Improved Settings Lock System
             toggleSettingsLock() {
                 this.settingsUnlocked = !this.settingsUnlocked;
                 this.updateSettingsLockUI();
@@ -903,7 +992,6 @@
                 const toggleLockBtn = document.getElementById('toggle-lock-btn');
                 const saveBtn = document.getElementById('save-settings');
                 
-                // Enable/disable all settings inputs
                 const inputs = document.querySelectorAll('#settings-modal input, #settings-modal button.color-option');
                 inputs.forEach(input => {
                     input.disabled = !this.settingsUnlocked;
@@ -925,7 +1013,40 @@
                 }
             }
 
-            // Rest of the methods remain the same but with lock references removed from main UI
+            // 🆕 Enhanced Modal Management for Mobile
+            openModal(modalId) {
+                const modal = document.getElementById(modalId);
+                modal.classList.remove('hidden');
+                document.body.classList.add('modal-open');
+                document.body.style.overflow = 'hidden';
+            }
+
+            closeModals() {
+                document.querySelectorAll('.modal').forEach(modal => {
+                    modal.classList.add('hidden');
+                });
+                document.body.classList.remove('modal-open');
+                document.body.style.overflow = '';
+                this.settingsUnlocked = false;
+            }
+
+            showSettingsModal() {
+                const slider = document.getElementById('font-slider');
+                const goalInput = document.getElementById('weekly-goal-input');
+                const darkToggle = document.getElementById('dark-mode-toggle');
+                
+                slider.value = this.getFontSizeIndex(this.state.settings.fontSize);
+                goalInput.value = this.state.currentWeek.goal;
+                darkToggle.checked = this.state.settings.darkMode;
+                
+                this.settingsUnlocked = false;
+                this.updateSettingsLockUI();
+                this.updateColorPicker();
+                
+                this.openModal('settings-modal');
+            }
+
+            // Rest of the methods remain similar but with improved mobile support
             async safeOperation(operation, errorMessage) {
                 if (this.isProcessing) {
                     this.showStatus('Please wait...', 1000, 'warning');
@@ -945,7 +1066,6 @@
                 }
             }
 
-            // 🕒 Clock Update
             updateClock() {
                 const now = new Date();
                 const timeString = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -955,7 +1075,6 @@
                 }
             }
 
-            // 📅 Day Management
             checkDayChange() {
                 const todayName = this.getTodayName();
                 if (this.state.today.date !== todayName) {
@@ -990,7 +1109,6 @@
                 this.hasUnsavedChanges = true;
             }
 
-            // 👆 Touch Operations - START button acts as first touch
             startTouch() {
                 return this.safeOperation(() => {
                     if (this.state.today.startTime) {
@@ -999,7 +1117,6 @@
                     }
 
                     this.state.today.startTime = new Date();
-                    // Record first touch immediately when START is pressed
                     this.state.today.touches++;
                     this.state.today.touchesHistory.push(new Date());
                     this.state.currentWeek.touches++;
@@ -1035,7 +1152,6 @@
                         this.showStatus('No touches to complete today.', 2000, 'warning');
                         return;
                     }
-
                     this.showCompleteDayModal();
                 }, 'Error completing day');
             }
@@ -1066,11 +1182,10 @@
                 }
             }
 
-            // ⏸️ Break System
             showBreakPrompt() {
                 const breakModal = document.getElementById('break-modal');
                 document.getElementById('break-minutes').value = '';
-                breakModal.classList.remove('hidden');
+                this.openModal('break-modal');
                 this.showStatus('Log your breaks for accurate pacing!', 3000);
             }
 
@@ -1094,10 +1209,9 @@
             }
 
             showCompleteDayModal() {
-                const modal = document.getElementById('complete-modal');
                 document.getElementById('summary-touches').textContent = this.state.today.touches;
                 document.getElementById('summary-pace').textContent = this.calculatePace();
-                modal.classList.remove('hidden');
+                this.openModal('complete-modal');
             }
 
             completeDay(skipBreak = false) {
@@ -1123,7 +1237,6 @@
                 this.render();
             }
 
-            // 📊 Progress Calculations
             calculatePace() {
                 if (!this.state.today.startTime || this.state.today.touches === 0) {
                     return 0;
@@ -1149,7 +1262,6 @@
                 if (progressText) progressText.textContent = 
                     `${this.state.currentWeek.touches}/${this.state.currentWeek.goal} (${Math.round(progress)}%)`;
 
-                // Update metrics
                 const paceValue = document.getElementById('pace-value');
                 const todayValue = document.getElementById('today-value');
                 const goalDisplay = document.getElementById('goal-display');
@@ -1159,7 +1271,6 @@
                 if (goalDisplay) goalDisplay.textContent = this.state.currentWeek.goal;
             }
 
-            // 📅 History Display
             updateHistoryDisplay() {
                 const historySection = document.getElementById('history-section');
                 const dayHistory = document.getElementById('day-history');
@@ -1201,29 +1312,8 @@
                 }
             }
 
-            // ⚙️ Settings Management - UPDATED
             openSettings() {
                 this.showSettingsModal();
-            }
-
-            showSettingsModal() {
-                const modal = document.getElementById('settings-modal');
-                const slider = document.getElementById('font-slider');
-                const goalInput = document.getElementById('weekly-goal-input');
-                const darkToggle = document.getElementById('dark-mode-toggle');
-                
-                // Set current values
-                slider.value = this.getFontSizeIndex(this.state.settings.fontSize);
-                goalInput.value = this.state.currentWeek.goal;
-                darkToggle.checked = this.state.settings.darkMode;
-                
-                // Reset to locked state when opening modal
-                this.settingsUnlocked = false;
-                this.updateSettingsLockUI();
-                this.updateColorPicker();
-                
-                modal.classList.remove('hidden');
-                document.body.style.overflow = 'hidden';
             }
 
             updateColorPicker() {
@@ -1250,7 +1340,6 @@
                 this.state.settings.fontSize = this.getFontSizeName(fontSizeIndex);
                 this.state.settings.darkMode = darkToggle.checked;
                 
-                // Lock settings after saving
                 this.state.settings.locked = true;
                 this.settingsUnlocked = false;
                 
@@ -1282,7 +1371,6 @@
                 return sizes[index];
             }
 
-            // 💾 Data Management
             exportToTxt() {
                 return this.safeOperation(() => {
                     const today = new Date();
@@ -1419,12 +1507,10 @@
                 }, 'Error resetting week');
             }
 
-            // 🔄 UI Updates
             render() {
                 this.updateProgress();
             }
 
-            // 💾 Persistence
             async loadFromStorage() {
                 try {
                     const saved = localStorage.getItem('touchTracker');
@@ -1470,7 +1556,6 @@
                 }
             }
 
-            // 📱 Background Services
             startBackgroundServices() {
                 setInterval(() => {
                     if (this.hasUnsavedChanges) {
@@ -1482,7 +1567,6 @@
                 setInterval(() => this.checkDayChange(), 60000);
             }
 
-            // 🎯 Event Listeners - UPDATED for new lock system
             setupEventListeners() {
                 // Action Buttons
                 document.getElementById('start-btn').addEventListener('click', () => this.startTouch());
@@ -1496,7 +1580,7 @@
                 document.getElementById('calculate-week-btn').addEventListener('click', () => this.calculateWeek());
                 document.getElementById('reset-week-btn').addEventListener('click', () => this.resetWeek());
 
-                // Settings - NEW LOCK SYSTEM
+                // Settings
                 document.getElementById('settings-btn').addEventListener('click', () => this.openSettings());
                 document.getElementById('toggle-lock-btn').addEventListener('click', () => this.toggleSettingsLock());
                 document.getElementById('save-settings').addEventListener('click', () => this.saveSettings());
@@ -1530,7 +1614,7 @@
                 // Color Theme Buttons
                 document.querySelectorAll('.color-option').forEach(btn => {
                     btn.addEventListener('click', (e) => {
-                        if (btn.disabled) return; // Only work if unlocked
+                        if (btn.disabled) return;
                         const color = e.target.dataset.color;
                         document.documentElement.className = 
                             document.documentElement.className.replace(/theme-\w+/, `theme-${color}`);
@@ -1548,20 +1632,18 @@
                     });
                 });
 
+                // Handle escape key to close modals
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'Escape') {
+                        this.closeModals();
+                    }
+                });
+
                 window.addEventListener('beforeunload', (e) => {
                     if (this.hasUnsavedChanges) {
                         this.saveToStorage();
                     }
                 });
-            }
-
-            closeModals() {
-                document.querySelectorAll('.modal').forEach(modal => {
-                    modal.classList.add('hidden');
-                });
-                document.body.style.overflow = '';
-                // Reset lock state when closing modal
-                this.settingsUnlocked = false;
             }
 
             showStatus(message, duration = 3000, type = 'info') {
