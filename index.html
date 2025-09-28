@@ -132,6 +132,11 @@
             border-radius: 50%;
             transition: background 0.3s;
             color: var(--text-color);
+            min-width: 44px; /* Minimum touch target size */
+            min-height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .settings-btn:hover {
@@ -208,7 +213,7 @@
             text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
         }
 
-        /* Action Buttons */
+        /* Action Buttons - IMPROVED TOUCH TARGETS */
         .actions-section {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -218,6 +223,7 @@
 
         .action-btn {
             min-height: 80px;
+            min-width: 80px; /* Ensure minimum touch target */
             padding: 25px 15px;
             border: none;
             border-radius: 20px;
@@ -228,6 +234,13 @@
             box-shadow: 0 4px 15px var(--shadow-color);
             position: relative;
             overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            /* Ensure touch target meets accessibility standards */
+            min-height: 44px;
+            padding: 12px 20px;
         }
 
         .action-btn:active {
@@ -256,7 +269,7 @@
             animation: pulse 0.5s ease-in-out;
         }
 
-        /* Utility Buttons */
+        /* Utility Buttons - FIXED TOUCH TARGETS */
         .utils-section {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -274,10 +287,27 @@
             box-shadow: 0 2px 5px var(--shadow-color);
             transition: all 0.3s ease;
             color: var(--text-color);
+            /* FIXED: Proper touch targets */
+            min-height: 44px; /* Minimum touch target size */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            word-wrap: break-word;
+            white-space: normal;
+            line-height: 1.2;
+            width: 100%; /* Ensure full width usage */
         }
 
         .util-btn:active {
             transform: scale(0.95);
+        }
+
+        /* Ensure text in utility buttons is properly centered and touchable */
+        .util-btn span {
+            display: block;
+            width: 100%;
+            text-align: center;
         }
 
         /* Day History Section */
@@ -315,7 +345,7 @@
             border-left-color: #4CAF50;
         }
 
-        /* Modal Styles - UPDATED FOR SCROLLING */
+        /* Modal Styles */
         .modal {
             position: fixed;
             top: 0;
@@ -346,7 +376,7 @@
             color: var(--text-color);
             max-height: 90vh;
             overflow-y: auto;
-            -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+            -webkit-overflow-scrolling: touch;
         }
 
         .modal-content h2 {
@@ -440,6 +470,11 @@
             border-radius: 50%;
             transition: all 0.3s;
             border: 3px solid transparent;
+            min-width: 44px; /* Proper touch targets */
+            min-height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .color-option:hover {
@@ -469,7 +504,7 @@
             outline: none;
         }
 
-        /* Modal Actions - STICKY AT BOTTOM */
+        /* Modal Actions - FIXED TOUCH TARGETS */
         .modal-actions {
             display: flex;
             gap: 10px;
@@ -481,17 +516,26 @@
             z-index: 10;
         }
 
-        .btn-primary {
+        .btn-primary, .btn-secondary, .btn-success {
             flex: 1;
             padding: 15px;
-            background: var(--primary-color);
-            color: white;
             border: none;
             border-radius: 10px;
             font-size: 1.1em;
             cursor: pointer;
             transition: all 0.3s;
             min-height: 50px;
+            /* FIXED: Proper touch targets for modal buttons */
+            min-height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
         }
 
         .btn-primary:active {
@@ -499,29 +543,13 @@
         }
 
         .btn-secondary {
-            flex: 1;
-            padding: 15px;
             background: var(--border-color);
             color: var(--text-color);
-            border: none;
-            border-radius: 10px;
-            font-size: 1.1em;
-            cursor: pointer;
-            transition: all 0.3s;
-            min-height: 50px;
         }
 
         .btn-success {
-            flex: 1;
-            padding: 15px;
             background: #4CAF50;
             color: white;
-            border: none;
-            border-radius: 10px;
-            font-size: 1.1em;
-            cursor: pointer;
-            transition: all 0.3s;
-            min-height: 50px;
         }
 
         .btn-secondary:active, .btn-success:active {
@@ -680,6 +708,13 @@
             
             .utils-section {
                 grid-template-columns: 1fr;
+                gap: 8px;
+            }
+            
+            .util-btn {
+                min-height: 50px; /* Larger touch targets on mobile */
+                padding: 12px 8px;
+                font-size: 0.95em;
             }
             
             .metric-value {
@@ -736,6 +771,11 @@
                 font-size: 2em;
                 padding: 8px;
             }
+            
+            .util-btn {
+                font-size: 0.9em;
+                padding: 10px 6px;
+            }
         }
 
         /* Reduced Motion */
@@ -755,6 +795,31 @@
         /* Prevent body scroll when modal is open */
         body.modal-open {
             overflow: hidden;
+        }
+
+        /* FIX: Ensure all buttons have proper touch targets */
+        button {
+            min-height: 44px; /* WCAG minimum touch target size */
+            touch-action: manipulation; /* Improve touch responsiveness */
+        }
+
+        /* FIX: Specific improvements for utility buttons */
+        #calculate-week-btn, #reset-week-btn {
+            min-height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 12px 8px;
+            line-height: 1.2;
+        }
+
+        /* FIX: Modal buttons specific improvements */
+        #save-settings, #cancel-settings, #save-break, #cancel-break {
+            min-height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
     </style>
 </head>
@@ -820,7 +885,7 @@
         <div class="status-message" id="status-message"></div>
     </div>
 
-    <!-- Settings Modal - NOW SCROLLABLE -->
+    <!-- Settings Modal -->
     <div id="settings-modal" class="modal hidden">
         <div class="modal-content">
             <h2>⚙️ Settings</h2>
@@ -1013,7 +1078,7 @@
                 }
             }
 
-            // 🆕 Enhanced Modal Management for Mobile
+            // Enhanced Modal Management for Mobile
             openModal(modalId) {
                 const modal = document.getElementById(modalId);
                 modal.classList.remove('hidden');
